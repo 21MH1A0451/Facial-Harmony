@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Emotion Detection</title>
+    <style>
+        .frame-container {
+            text-align: center;
+            margin: 20px;
+        }
+        .frame {
+            border: 10px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .emotion {
+            font-size: 20px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="frame-container">
+        <h1>Emotion Detection</h1>
+        <div>
+            <img id="video" src="/video_feed" class="frame">
+        </div>
+        <button onclick="captureImage()">Capture</button>
+        <div id="emotion" class="emotion"></div>
+        <audio id="audio" controls style="display: none;"></audio>
+    </div>
+    <script>
+        function captureImage() {
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            canvas.width = video.width;
+            canvas.height = video.height;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, video.width, video.height);
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            fetch('/capture', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('emotion').innerText = `Detected Emotion: ${data.emotion}`;
+                const audio = document.getElementById('audio');
+                audio.src = data.song_url;
+                audio.style.display = 'block';
+                audio.play();
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
